@@ -1,6 +1,0 @@
-%syntax-version=1.0.0
-%project=myduit
-%uri=https://github.com/aqlanhadi/myduit
-
-appschema 2024-05-31T07:34:42Z Aqlan Nor Azman <aqlanhadi@gmail.com> # add schema for myduit objects
-expenses [appschema] 2024-05-31T07:50:47Z Aqlan Nor Azman <aqlanhadi@gmail.com> # create tables to track expenses
