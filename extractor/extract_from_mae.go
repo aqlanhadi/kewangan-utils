@@ -68,6 +68,8 @@ func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 		}
 	}
 
+	// return Transactions
+
 	// loop and do calculation to compare with parsed (show correct extraction)
 	var calculated_debit, calculated_credit decimal.Decimal
 	current_balance := beginning_balance
