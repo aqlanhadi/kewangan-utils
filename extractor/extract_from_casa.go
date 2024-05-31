@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
@@ -9,7 +10,10 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func ExtractFromCASA(fileReader *pdf.Reader) {
+func ExtractFromCASA(file *os.File, fileReader *pdf.Reader) {
+
+	// initialize structs
+	Transactions = []Transaction{}
 
 	statement_content := ""
 
@@ -21,6 +25,9 @@ func ExtractFromCASA(fileReader *pdf.Reader) {
 	var in_footer bool = false
 
 	transaction := new(Transaction)
+
+	// extract date
+	ExtractDate(file.Name())
 
 	// loop pages
 	for pageIndex := 1; pageIndex <= fileReader.NumPage(); pageIndex++ {
@@ -45,6 +52,7 @@ func ExtractFromCASA(fileReader *pdf.Reader) {
 
 				if found {
 					beginning_balance = value
+					ParsedData.SetStartingBalance(beginning_balance)
 				}
 			}
 
@@ -69,7 +77,7 @@ func ExtractFromCASA(fileReader *pdf.Reader) {
 
 	for _, item := range Transactions {
 
-		fmt.Println(item)
+		// fmt.Println(item)
 		current_balance = current_balance.Add(item.Amount)
 
 		if item.Amount.Cmp(decimal.Zero) > 0 {
@@ -80,32 +88,22 @@ func ExtractFromCASA(fileReader *pdf.Reader) {
 		
 	}
 
-	// tests
+	ParsedData.AddTransactions(Transactions)
 
-	fmt.Println("beginning balance", beginning_balance)
+	ParsedData.SetTotalCredit(calculated_credit)
+	ParsedData.SetTotalDebit(calculated_debit)
+	ParsedData.SetEndingBalance(current_balance)
 
-	all_okay := testEquality(&calculated_debit, &total_debit) && testEquality(&calculated_credit, &total_credit) && testEquality(&current_balance, &ending_balance)
-
-	if all_okay {
-		fmt.Println("all equality checks passed.")
-		fmt.Println("generating json.")
-	} else {
-		fmt.Println("some checks failed.")
-	}
+	ParsedData.SetParsedEndingBalance(ending_balance)
 
 }
 
 func casa_parseMainRecord(csmr *int, transaction *Transaction, line *string) {
 
-	regex_main_record_pattern, _ := regexp.Compile(`(\d{1,2}\/\d{1,2}\/\d{1,2})\s+(?:([A-Z0-9a-z \/.\-]+)\s+)?(\d{1,3}(,\d{3})*(\.\d{2})?)([+-])\s+(\d{1,3}(,\d{3})*(\.\d{2})?)(DR)?`)
+	regex_main_record_pattern, _ := regexp.Compile(`(\d{1,2}\/\d{1,2})\s+([A-Z0-9a-z \/.\-\*]+)\s+(\.\d{2}|\d{1,3}(,\d{3})*(\.\d{2})?)([-+])\s+(\.\d{2}|\d{1,3}(,\d{3})*(\.\d{2})?)(DR)?`)
 	main_record_match := regex_main_record_pattern.FindStringSubmatch(*line)
 
-	// fmt.Println(*line)
 	if main_record_match != nil {
-		// fmt.Println("[MAIN] > ", main_record_match)
-		for i, item := range main_record_match {
-			fmt.Printf("%d = %s\n", i, item)
-		}
 
 		if *csmr > 0 {
 			// save into struct
@@ -136,9 +134,8 @@ func casa_parseMainRecord(csmr *int, transaction *Transaction, line *string) {
 		if err != nil {
 			panic("unable to parse float from " + balance_string)
 		}
-		 
-		// fmt.Println(main_record_match)
-		transaction.Origin = "MAE"
+
+		transaction.Origin = ParsedData.Account
 		transaction.Date = main_record_match[1]
 		transaction.Action = main_record_match[2]
 		transaction.Amount = amount
@@ -154,11 +151,6 @@ func casa_parseTransactionDescription(csmr *int, transaction *Transaction, line 
 	transaction_description_match := regex_transaction_description_pattern.FindStringSubmatch(strings.TrimRight(*line, " "))
 
 	if transaction_description_match != nil {
-		fmt.Println("[DESC] > ", transaction_description_match)
-
-		for i, item := range transaction_description_match {
-			fmt.Printf("%d = %s\n", i, item)
-		}
 
 		if *csmr == 1 {
 			transaction.Beneficiary = transaction_description_match[1]
@@ -182,11 +174,6 @@ func casa_parseStatementEnd(transaction *Transaction, line *string) (bool) {
 	statement_end_match := regex_statement_end_pattern.FindStringSubmatch(*line)
 
 	if statement_end_match != nil {
-		fmt.Println("[END] > ", statement_end_match)
-		for i, item := range statement_end_match {
-			fmt.Printf("%d = %s\n", i, item)
-		}
-
 
 		Transactions = append(Transactions, *transaction)
 
@@ -202,7 +189,6 @@ func casa_getBeginningBalanceFromStatement(line *string) (bool, decimal.Decimal)
 	beginning_balance_match := regex_beginning_balance_pattern.FindStringSubmatch(*line)
 	
 	if beginning_balance_match != nil {
-		fmt.Println("[BEGINNING BALANCE] > ", beginning_balance_match)
 		value, _ := decimal.NewFromString(strings.ReplaceAll(beginning_balance_match[1], ",", ""))
 
 		return true, value

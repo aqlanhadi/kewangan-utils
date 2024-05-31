@@ -1,29 +1,41 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
 	"mysimpan/statements/extractor"
+	"mysimpan/statements/loader"
 	u "mysimpan/statements/utils"
 	"os"
 
+	"database/sql"
+
 	"github.com/ledongthuc/pdf"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	
-	cfg, err := u.LoadConfig()
+
+	connStr := "postgresql://localhost:5432/myduit_test?sslmode=disable"
+	// Connect to database
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	dir := "./test/CASA-i/"
+	dir := "./test/MAE/"
 
 	files, _ := os.ReadDir(dir)
-	
 
 	for _, file := range files {
-		fmt.Println(file.Name())
+
+		accSupertype, accSubtype, err := u.IdentifyAccountTypeFromFileName(file.Name())
+		if err != nil {
+			fmt.Println("file type is unknown, skipping...")
+			continue
+		}
+
+		fmt.Printf("extracting %s (%s) as %s\n", file.Name(), accSubtype, accSupertype)
 
 		f, r, err := pdf.Open(dir + file.Name())
 		if err != nil {
@@ -32,23 +44,22 @@ func main() {
 
 		defer f.Close()
 
-		acc_type, err := u.IdentifyStatementAccount(cfg, r)
-		if err != nil {
-			panic(err)
-		}
-
-		d := extractor.Extract(f, r, acc_type)
+		d := extractor.Extract(f, r, accSupertype, accSubtype)
 
 		if (d.EndingBalanceMatches()) {
 			fmt.Println("Parsing successful for " + file.Name())
 			fmt.Println("Adding to DB")
+
+			loader.Load(db, &d)
+			// panic("stop")
+			
 		}
 
-		out_file_name := fmt.Sprintf("%s_%s_%s.json", acc_type, d.Year, d.Month)
+		// out_file_name := fmt.Sprintf("%s_%s_%s.json", accType, d.Year, d.Month)
 
-		b, _ := json.Marshal(d)
+		// b, _ := json.Marshal(d)
 
-		os.WriteFile("./test/MAE/out/" + out_file_name, b, 0644)
+		// os.WriteFile("./test/MAE/out/" + out_file_name, b, 0644)
 	}
 
 	// statement_file_path := "0398121207523300_20240428.pdf" // cc

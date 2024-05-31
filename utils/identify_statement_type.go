@@ -2,43 +2,40 @@ package utils
 
 import (
 	"errors"
-	"reflect"
-	"strings"
+	"fmt"
+	"os"
+	"regexp"
+	"slices"
 
-	"github.com/ledongthuc/pdf"
+	v "github.com/spf13/viper"
 )
 
-func IdentifyStatementAccount(cfg *Config, fileReader *pdf.Reader) (string, error) {
+func IdentifyAccountTypeFromFileName(fileName string) (string, string, error) {
 
-	p := fileReader.Page(1)
-	if p.V.IsNull() {
-		return "", errors.New("page is empty")
-	}
+	v.SetConfigName("config")
+	wd, _ := os.Getwd()
+	v.AddConfigPath(wd)
 
-	content, err := p.GetPlainText(nil)
+	err := v.ReadInConfig()
 	if err != nil {
-		return "", err
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	v := reflect.ValueOf(cfg.AccountTypeIdentifiers)
-	
-	for i := 0; i < v.NumField(); i++ {
+	type_map := v.GetStringMapStringSlice("account_type_map")
 
-		key := v.Type().Field(i).Name
-		
-		if value, ok := v.Field(i).Interface().(string); ok {
+	for fileKey, fileRegex := range v.GetStringMapString("account_type_file_regex") {
+		file_pattern, _ := regexp.Compile(fileRegex)
+		match := file_pattern.FindStringSubmatch(fileName)
 
-			found := strings.Contains(content, value)
-
-			if found {
-				return key, nil
+		if match != nil {
+			for supertype, vals := range type_map {
+				// fmt.Println(supertype, vals)
+				if (slices.Contains(vals, fileKey)) {
+					return supertype, fileKey, nil
+				}
 			}
-
-		} else {
-			return "", errors.New("unable to cast configuration value to string")
 		}
 	}
 
-	return "", nil
-
+	return "", "", errors.New("unknown account type")
 }

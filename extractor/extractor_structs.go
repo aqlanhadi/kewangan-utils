@@ -18,8 +18,12 @@ type Transaction struct {
 }
 
 type Data struct {
+	Source string `json:"source"`
+	AccountNumber string `json:"account_number"`
 	Year string `json:"year"`
 	Month string `json:"month"`
+	Account string `json:"account"`
+	AccountType string `json:"account_type"`
 	StartingBalance decimal.Decimal `json:"starting_balance"`
 
 	EndingBalance decimal.Decimal `json:"ending_balance"`
@@ -29,6 +33,11 @@ type Data struct {
 	TotalCredit	decimal.Decimal `json:"total_credit"`
 
 	Transactions []Transaction `json:"transactions"`
+}
+
+func (d *Data) SetAccountType(account string, acc_type string) {
+	d.Account = account
+	d.AccountType = acc_type
 }
 
 func (d *Data) SetYearAndMonth(y string, m string) {

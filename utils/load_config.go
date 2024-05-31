@@ -13,8 +13,13 @@ type Config struct {
 		MBB_MAYBANK_2_CREDIT_CARDS string `yaml:"mbb_maybank_2_credit_cards"`
 	} `yaml:"account_type_string_identifiers"`
 	AccountTypeRegex struct {
-		MBB_MAE_REGEX string `yaml:"mbb_mae"`
+		mbb_mae string `yaml:"mbb_mae"`
+		mbb_casa string `yaml:"mbb_casa_i"`
+		mbb_psa_i string `yaml:"mbb_psa_i"`
 	} `yaml:"account_type_file_regex"`
+	AccountTypeMap struct {
+		CASA []string `yaml:"casa"`
+	} `yaml:"account_type_map"`
 }
 
 var Cfg Config

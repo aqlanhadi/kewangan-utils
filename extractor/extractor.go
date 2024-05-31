@@ -1,8 +1,9 @@
 package extractor
 
 import (
-	"fmt"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/ledongthuc/pdf"
 )
@@ -10,21 +11,29 @@ import (
 var Transactions []Transaction
 var ParsedData Data
 
-func Extract(f *os.File, r *pdf.Reader, acc_type string) (Data) {
-	
-	if acc_type == "MBB_MAE" {
-		ExtractFromMAE(f, r)
+func Extract(f *os.File, r *pdf.Reader, acc_supertype string, acc_subtype string) (Data) {
+
+	ParsedData = Data{
+		AccountType: acc_supertype,
+		Account: acc_subtype,
+		Source: path.Base(f.Name()),
+		AccountNumber: strings.Split(path.Base(f.Name()), "_")[0],
 	}
 
-	if acc_type == "MBB_SAVINGS_I" {
-		fmt.Println("statement is from CASA account type. extracting")
-		ExtractFromCASA(r)
+	ExtractDate(f.Name())
+
+	if ParsedData.AccountType == "mbb_casa" {
+		ExtractFromCASA(f, r)
 	}
 
-	if acc_type == "MBB_MAYBANK_2_CREDIT_CARDS" {
-		fmt.Println("statement is from CC Account type. extracting")
-		ExtractFromMBBCC((r))
-	}
+	// if acc_type == "MBB_SAVINGS_I" {
+	// 	ExtractFromMAE(f, r)
+	// }
+
+	// if acc_type == "MBB_MAYBANK_2_CREDIT_CARDS" {
+	// 	fmt.Println("statement is from CC Account type. extracting")
+	// 	ExtractFromMBBCC((r))
+	// }
 
 	// fmt.Println(ParsedData.Month)
 	// fmt.Println("\t" + ParsedData.StartingBalance.StringFixed(2))

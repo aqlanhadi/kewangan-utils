@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"fmt"
-	u "mysimpan/statements/utils"
 	"os"
 	"regexp"
 	"strings"
@@ -15,8 +14,7 @@ func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 
 	// initialize structs
 	Transactions = []Transaction{}
-	ParsedData = Data{}
-
+	
 	statement_content := ""
 
 	var count_since_main_record int
@@ -29,7 +27,6 @@ func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 	transaction := new(Transaction)
 
 	// extract date
-	extractDate(file.Name())
 
 	// loop pages
 	for pageIndex := 1; pageIndex <= fileReader.NumPage(); pageIndex++ {
@@ -85,21 +82,8 @@ func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 
 		if item.Amount.Cmp(decimal.Zero) > 0 {
 			calculated_credit = calculated_credit.Add(item.Amount)
-			// fmt.Print("+" + item.Amount.StringFixed(2) + "\t | ")
-			// fmt.Print(current_balance.StringFixed(2) + "\t | ")
-			// fmt.Print(calculated_credit.StringFixed(2) + "\t | \t\t")
-
-			// fmt.Print(item)
-			// fmt.Println()
 		} else {
 			calculated_debit = calculated_debit.Add(item.Amount)
-			// fmt.Print(item.Amount.StringFixed(2) + "\t | ")
-			// fmt.Print(current_balance.StringFixed(2) + "\t | ")
-			// fmt.Print("\t\t | " + calculated_debit.StringFixed(2) + "\t")
-
-			// fmt.Print(item)
-			// fmt.Println()
-
 		}
 		
 	}
@@ -130,13 +114,6 @@ func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 	// fmt.Println("------------------------------------")
 
 
-}
-
-func extractDate(fileName string) {
-	date_pattern, _ := regexp.Compile(u.Cfg.AccountTypeRegex.MBB_MAE_REGEX)
-	date_match := date_pattern.FindStringSubmatch(fileName)
-
-	ParsedData.SetYearAndMonth(date_match[1], date_match[2])
 }
 
 func testEquality(calc *decimal.Decimal, extracted *decimal.Decimal) (bool) {
@@ -188,7 +165,7 @@ func mae_parseMainRecord(csmr *int, transaction *Transaction, line *string) {
 		}
 		 
 		// fmt.Println(main_record_match)
-		transaction.Origin = "MAE"
+		transaction.Origin = ParsedData.Account
 		transaction.Date = main_record_match[1]
 		transaction.Action = main_record_match[2]
 		transaction.Amount = amount
