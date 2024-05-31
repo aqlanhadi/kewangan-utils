@@ -21,8 +21,13 @@ type Data struct {
 	Year string `json:"year"`
 	Month string `json:"month"`
 	StartingBalance decimal.Decimal `json:"starting_balance"`
+
+	EndingBalance decimal.Decimal `json:"ending_balance"`
+	ParsedEndingBalance decimal.Decimal `json:"parsed_ending_balance"`
+
 	TotalDebit	decimal.Decimal `json:"total_debit"`
 	TotalCredit	decimal.Decimal `json:"total_credit"`
+
 	Transactions []Transaction `json:"transactions"`
 }
 
@@ -37,6 +42,18 @@ func (d *Data) AddTransactions(t []Transaction) {
 
 func (d *Data) SetStartingBalance(v decimal.Decimal) {
 	d.StartingBalance = v
+}
+
+func (d *Data) SetEndingBalance(v decimal.Decimal) {
+	d.EndingBalance = v
+}
+
+func (d *Data) SetParsedEndingBalance(v decimal.Decimal) {
+	d.ParsedEndingBalance = v
+}
+
+func (d *Data) EndingBalanceMatches() (bool) {
+	return d.ParsedEndingBalance.Equal(d.EndingBalance)
 }
 
 func (d *Data) SetTotalCredit(v decimal.Decimal) {

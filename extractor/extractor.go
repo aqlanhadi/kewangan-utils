@@ -13,7 +13,6 @@ var ParsedData Data
 func Extract(f *os.File, r *pdf.Reader, acc_type string) (Data) {
 	
 	if acc_type == "MBB_MAE" {
-		fmt.Println("statement is from MAE account type. extracting")
 		ExtractFromMAE(f, r)
 	}
 
@@ -26,6 +25,17 @@ func Extract(f *os.File, r *pdf.Reader, acc_type string) (Data) {
 		fmt.Println("statement is from CC Account type. extracting")
 		ExtractFromMBBCC((r))
 	}
+
+	// fmt.Println(ParsedData.Month)
+	// fmt.Println("\t" + ParsedData.StartingBalance.StringFixed(2))
+	// if ParsedData.EndingBalanceMatches() {
+	// 	fmt.Println("\t" + "CHECKS PASSED")
+	// } else {
+	// 	fmt.Println("\t" + "CHECKS FAILED")
+	// }
+
+	// fmt.Print(json.Marshal(ParsedData))
+	// panic("z")
 
 	return ParsedData
 }	

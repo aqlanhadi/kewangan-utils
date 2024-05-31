@@ -17,7 +17,7 @@ func main() {
 		panic(err)
 	}
 
-	dir := "./test/MAE/"
+	dir := "./test/CASA-i/"
 
 	files, _ := os.ReadDir(dir)
 	
@@ -39,14 +39,17 @@ func main() {
 
 		d := extractor.Extract(f, r, acc_type)
 
-		out_file_name := fmt.Sprintf("%s_%s_%s.pdf", acc_type, d.Year, d.Month)
+		if (d.EndingBalanceMatches()) {
+			fmt.Println("Parsing successful for " + file.Name())
+			fmt.Println("Adding to DB")
+		}
+
+		out_file_name := fmt.Sprintf("%s_%s_%s.json", acc_type, d.Year, d.Month)
 
 		b, _ := json.Marshal(d)
 
 		os.WriteFile("./test/MAE/out/" + out_file_name, b, 0644)
 	}
-
-	panic("z")
 
 	// statement_file_path := "0398121207523300_20240428.pdf" // cc
 	// statement_file_path := "514169996465_20240229.pdf" // mae

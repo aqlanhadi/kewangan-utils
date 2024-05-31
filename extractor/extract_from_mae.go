@@ -13,7 +13,9 @@ import (
 
 func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 
+	// initialize structs
 	Transactions = []Transaction{}
+	ParsedData = Data{}
 
 	statement_content := ""
 
@@ -74,70 +76,58 @@ func ExtractFromMAE(file *os.File, fileReader *pdf.Reader) {
 	var calculated_debit, calculated_credit decimal.Decimal
 	current_balance := beginning_balance
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Beginning Balance\t: ", beginning_balance)
-	fmt.Println("------------------------------------")
+	// fmt.Println("------------------------------------")
+	// fmt.Println("Beginning Balance\t: ", beginning_balance)
+	// fmt.Println("------------------------------------")
 
 	for _, item := range Transactions {
 		current_balance = current_balance.Add(item.Amount)
 
 		if item.Amount.Cmp(decimal.Zero) > 0 {
 			calculated_credit = calculated_credit.Add(item.Amount)
-			fmt.Print("+" + item.Amount.StringFixed(2) + "\t | ")
-			fmt.Print(current_balance.StringFixed(2) + "\t | ")
-			fmt.Print(calculated_credit.StringFixed(2) + "\t | \t\t")
+			// fmt.Print("+" + item.Amount.StringFixed(2) + "\t | ")
+			// fmt.Print(current_balance.StringFixed(2) + "\t | ")
+			// fmt.Print(calculated_credit.StringFixed(2) + "\t | \t\t")
 
-			fmt.Print(item)
-			fmt.Println()
+			// fmt.Print(item)
+			// fmt.Println()
 		} else {
 			calculated_debit = calculated_debit.Add(item.Amount)
-			fmt.Print(item.Amount.StringFixed(2) + "\t | ")
-			fmt.Print(current_balance.StringFixed(2) + "\t | ")
-			fmt.Print("\t\t | " + calculated_debit.StringFixed(2) + "\t")
+			// fmt.Print(item.Amount.StringFixed(2) + "\t | ")
+			// fmt.Print(current_balance.StringFixed(2) + "\t | ")
+			// fmt.Print("\t\t | " + calculated_debit.StringFixed(2) + "\t")
 
-			fmt.Print(item)
-			fmt.Println()
+			// fmt.Print(item)
+			// fmt.Println()
 
 		}
 		
 	}
 
+	ParsedData.AddTransactions(Transactions)
+
+	ParsedData.SetTotalCredit(calculated_credit)
+	ParsedData.SetTotalDebit(calculated_debit)
+	ParsedData.SetEndingBalance(current_balance)
+
+	ParsedData.SetParsedEndingBalance(ending_balance)
+
 	// tests
-	fmt.Println("------------------------------------")
-	fmt.Println("Beginning Balance\t: ", beginning_balance)
-	fmt.Println("------------------------------------")
-	fmt.Println("DEBIT")
-	fmt.Println("\tCalculated\t: ", calculated_debit.StringFixed(2))
-	fmt.Println("\tParsed\t\t: ", total_debit.StringFixed(2))
-	fmt.Println("------------------------------------")
-	fmt.Println("CREDIT")
-	fmt.Println("\tCalculated\t: ", calculated_credit.StringFixed(2))
-	fmt.Println("\tParsed\t\t: ", total_credit.StringFixed(2))
-	fmt.Println("------------------------------------")
-	fmt.Println("ENDING")
-	fmt.Println("\tCalculated\t: ", current_balance.StringFixed(2))
-	fmt.Println("\tParsed\t\t: ", ending_balance.StringFixed(2))
-	fmt.Println("------------------------------------")
-
-
-	ending_balance_match := testEquality(&current_balance, &ending_balance)
-	// all_okay := 
-	// 	testEquality(&calculated_debit, &total_debit) && 
-	// 	testEquality(&calculated_credit, &total_credit) && ending_balance_match
-		
-
-	// if all_okay {
-	// 	fmt.Println("CHECKS PASSED")
-	// } else {
-	// 	fmt.Println("CHECKS FAILED")
-	// }
-
-	if ending_balance_match {
-		fmt.Println("ENDING BALANCE MATCH")
-	}
-
-	fmt.Println()
-	fmt.Println()
+	// fmt.Println("------------------------------------")
+	// fmt.Println("Beginning Balance\t: ", beginning_balance)
+	// fmt.Println("------------------------------------")
+	// fmt.Println("DEBIT")
+	// fmt.Println("\tCalculated\t: ", calculated_debit.StringFixed(2))
+	// fmt.Println("\tParsed\t\t: ", total_debit.StringFixed(2))
+	// fmt.Println("------------------------------------")
+	// fmt.Println("CREDIT")
+	// fmt.Println("\tCalculated\t: ", calculated_credit.StringFixed(2))
+	// fmt.Println("\tParsed\t\t: ", total_credit.StringFixed(2))
+	// fmt.Println("------------------------------------")
+	// fmt.Println("ENDING")
+	// fmt.Println("\tCalculated\t: ", current_balance.StringFixed(2))
+	// fmt.Println("\tParsed\t\t: ", ending_balance.StringFixed(2))
+	// fmt.Println("------------------------------------")
 
 
 }
