@@ -16,14 +16,16 @@ import (
 
 func main() {
 
-	connStr := "postgresql://localhost:5432/myduit_test?sslmode=disable"
+
 	// Connect to database
+	connStr := "postgresql://postgres:password@localhost:5432/myduit_test?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
-	dir := "./test/MAE/"
+	dir := "./test/PSA-i/"
 
 	files, _ := os.ReadDir(dir)
 

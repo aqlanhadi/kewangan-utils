@@ -4,3 +4,5 @@
 
 0001_appschema 2024-05-31T08:48:35Z Aqlan Nor Azman <aqlanhadi@gmail.com> # hello myduit
 0002_expenses_table 2024-05-31T08:51:22Z Aqlan Nor Azman <aqlanhadi@gmail.com> # add expenses table
+0003_rename_table [0002_expenses_table] 2024-06-04T11:21:09Z Aqlan Nor Azman <aqlanhadi@gmail.com> # Rename expenses to transactions
+0004_modify_columns [0003_rename_table] 2024-06-04T11:21:44Z Aqlan Nor Azman <aqlanhadi@gmail.com> # Added required columns to table
