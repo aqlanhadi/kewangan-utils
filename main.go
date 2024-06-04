@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"mysimpan/statements/extractor"
 	"mysimpan/statements/loader"
 	u "mysimpan/statements/utils"
 	"os"
+	"strings"
 
 	"database/sql"
 
@@ -25,21 +27,27 @@ func main() {
 	}
 	defer db.Close()
 
-	dir := "./test/PSA-i/"
+	dir := "./test/"
+	fileList := generateFileList(&dir)
 
-	files, _ := os.ReadDir(dir)
+	for _, file := range fileList {
 
-	for _, file := range files {
+		fileName := strings.Split(file, "/")[1]
 
-		accSupertype, accSubtype, err := u.IdentifyAccountTypeFromFileName(file.Name())
+		// only allow 1 level of dir for now
+		if strings.Contains(fileName, "/") {
+			log.Fatalln("Invalid Folder Structure")
+		}
+
+		accSupertype, accSubtype, err := u.IdentifyAccountTypeFromFileName(fileName)
 		if err != nil {
 			fmt.Println("file type is unknown, skipping...")
 			continue
 		}
 
-		fmt.Printf("extracting %s (%s) as %s\n", file.Name(), accSubtype, accSupertype)
+		fmt.Printf("extracting %s (%s) as %s\n", fileName, accSubtype, accSupertype)
 
-		f, r, err := pdf.Open(dir + file.Name())
+		f, r, err := pdf.Open(dir + file)
 		if err != nil {
 			panic(err)
 		}
@@ -49,7 +57,7 @@ func main() {
 		d := extractor.Extract(f, r, accSupertype, accSubtype)
 
 		if (d.EndingBalanceMatches()) {
-			fmt.Println("Parsing successful for " + file.Name())
+			fmt.Println("Parsing successful for " + file)
 			fmt.Println("Adding to DB")
 
 			loader.Load(db, &d)
@@ -80,3 +88,18 @@ func main() {
 	
 }
 
+func generateFileList(path *string) []string {
+	var fileList []string
+	
+	f := os.DirFS(*path)
+
+
+	fs.WalkDir(f, ".", func(p string, d fs.DirEntry, err error) error {
+		if !d.IsDir() {
+			fileList = append(fileList, p)
+		}
+		return nil
+	})
+
+	return fileList
+}

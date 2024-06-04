@@ -14,13 +14,14 @@ var AffectedRows int
 
 func Load(db *sql.DB, d *d.Data) {
 	AffectedRows = 0
-	// json, err := json.MarshalIndent(*d, "", "  ")
-	// if err != nil {
+	// json, jerr := json.MarshalIndent(*d, "", "  ")
+	// if jerr != nil {
 	// 	panic("error marshalling struct")
 	// }
 
 
-	// fmt.Println(string(json))
+	// // fmt.Println(string(json))
+	// panic("zzz")
 	// delete all from similar source
 	err := deleteTransactionsOriginatingFromSameSource(db, d.Source)
 	if err != nil {

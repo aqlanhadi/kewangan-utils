@@ -1,6 +1,7 @@
 package extractor
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -26,6 +27,10 @@ func Extract(f *os.File, r *pdf.Reader, acc_supertype string, acc_subtype string
 		ExtractFromCASA(f, r)
 	}
 
+	if ParsedData.AccountType == "mbb_cc" {
+		ExtractFromMBBCC(f, r)
+	}
+
 	// if acc_type == "MBB_SAVINGS_I" {
 	// 	ExtractFromMAE(f, r)
 	// }
@@ -35,13 +40,20 @@ func Extract(f *os.File, r *pdf.Reader, acc_supertype string, acc_subtype string
 	// 	ExtractFromMBBCC((r))
 	// }
 
-	// fmt.Println(ParsedData.Month)
-	// fmt.Println("\t" + ParsedData.StartingBalance.StringFixed(2))
-	// if ParsedData.EndingBalanceMatches() {
-	// 	fmt.Println("\t" + "CHECKS PASSED")
-	// } else {
-	// 	fmt.Println("\t" + "CHECKS FAILED")
+	// json, err := json.MarshalIndent(ParsedData, "", "  ")
+	// if err != nil {
+	// 	panic("error marshalling struct")
 	// }
+	// fmt.Println(string(json))
+	// panic("stop")
+
+	fmt.Println(ParsedData.Month)
+	fmt.Println("\t" + ParsedData.StartingBalance.StringFixed(2))
+	if ParsedData.EndingBalanceMatches() {
+		fmt.Println("\t" + "CHECKS PASSED")
+	} else {
+		fmt.Println("\t" + "CHECKS FAILED")
+	}
 
 	// fmt.Print(json.Marshal(ParsedData))
 	// panic("z")
